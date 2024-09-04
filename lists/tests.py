@@ -1,6 +1,5 @@
 from django.test import TestCase
 from lists.models import Item
-from django.db import models
 
 
 class HomePageTest(TestCase):
@@ -31,6 +30,4 @@ class ItemModelTest(TestCase):
         self.assertEqual(first_saved_item.text, "The first (ever) list item")
         self.assertEqual(second_saved_item.text, "Item the second")
 
-        # Create your models here.
-        class Item(models.Model):
-            pass
+       
