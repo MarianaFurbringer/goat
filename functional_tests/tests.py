@@ -1,16 +1,16 @@
-from django.test import LiveServerTestCase
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-import time
 from selenium.common.exceptions import WebDriverException
+import time
 
 MAX_WAIT = 5
 
-class NewVisitorTest(LiveServerTestCase):
+
+class NewVisitorTest(StaticLiveServerTestCase):
     def setUp(self):
-        # Inicializa o navegador Chrome
-        self.browser = webdriver.Chrome()
+        self.browser = webdriver.Firefox()
 
     def tearDown(self):
         self.browser.quit()
@@ -29,39 +29,40 @@ class NewVisitorTest(LiveServerTestCase):
                 time.sleep(0.5)
 
     def test_can_start_a_todo_list(self):
-        # Edith ouviu falar de um novo aplicativo de lista de tarefas.
-        # Ela vai conferir a página inicial
+        # Edith has heard about a cool new online to-do app.
+        # She goes to check out its homepage
         self.browser.get(self.live_server_url)
 
-        # Ela nota que o título da página e o cabeçalho mencionam listas de tarefas
+        # She notices the page title and header mention to-do lists
         self.assertIn("To-Do", self.browser.title)
         header_text = self.browser.find_element(By.TAG_NAME, "h1").text
         self.assertIn("To-Do", header_text)
 
-        # Ela encontra a caixa de entrada para adicionar um item
+        # She is invited to enter a to-do item straight away
         inputbox = self.browser.find_element(By.ID, "id_new_item")
+        self.assertEqual(inputbox.get_attribute("placeholder"), "Enter a to-do item")
 
-        # Ela digita "Buy peacock feathers" na caixa de texto
+        # She types "Buy peacock feathers" into a text box
+        # (Edith's hobby is tying fly-fishing lures)
         inputbox.send_keys("Buy peacock feathers")
 
-        # Quando ela pressiona Enter, a página é atualizada e agora lista
-        # "1: Buy peacock feathers" como um item na tabela de tarefas
+        # When she hits enter, the page updates, and now the page lists
+        # "1: Buy peacock feathers" as an item in a to-do list table
         inputbox.send_keys(Keys.ENTER)
-
-        # Espera o item aparecer na tabela
         self.wait_for_row_in_list_table("1: Buy peacock feathers")
 
-        # Ainda há uma caixa de texto convidando ela a adicionar outro item.
-        # Ela insere "Use peacock feathers to make a fly"
+        # There is still a text box inviting her to add another item.
+        # She enters "Use peacock feathers to make a fly"
+        # (Edith is very methodical)
         inputbox = self.browser.find_element(By.ID, "id_new_item")
         inputbox.send_keys("Use peacock feathers to make a fly")
         inputbox.send_keys(Keys.ENTER)
 
-        # A página atualiza novamente e agora mostra ambos os itens na lista
+        # The page updates again, and now shows both items on her list
         self.wait_for_row_in_list_table("1: Buy peacock feathers")
         self.wait_for_row_in_list_table("2: Use peacock feathers to make a fly")
 
-        # Satisfeita, ela volta a dormir
+        # Satisfied, she goes back to sleep
 
     def test_multiple_users_can_start_lists_at_different_urls(self):
         # Edith starts a new to-do list
@@ -78,7 +79,7 @@ class NewVisitorTest(LiveServerTestCase):
         # Now a new user, Francis, comes along to the site.
 
         ## We delete all the browser's cookies
-        ## as a way of simulating a brand new user session  
+        ## as a way of simulating a brand new user session
         self.browser.delete_all_cookies()
 
         # Francis visits the home page.  There is no sign of Edith's
@@ -106,3 +107,30 @@ class NewVisitorTest(LiveServerTestCase):
         self.assertIn("Buy milk", page_text)
 
         # Satisfied, they both go back to sleep
+
+    def test_layout_and_styling(self):
+        # Edith goes to the home page,
+        self.browser.get(self.live_server_url)
+
+        # Her browser window is set to a very specific size
+        self.browser.set_window_size(1024, 768)
+
+        # She notices the input box is nicely centered
+        inputbox = self.browser.find_element(By.ID, "id_new_item")
+        self.assertAlmostEqual(
+            inputbox.location["x"] + inputbox.size["width"] / 2,
+            512,
+            delta=10,
+        )
+
+        # She starts a new list and sees the input is nicely
+        # centered there too
+        inputbox.send_keys("testing")
+        inputbox.send_keys(Keys.ENTER)
+        self.wait_for_row_in_list_table("1: testing")
+        inputbox = self.browser.find_element(By.ID, "id_new_item")
+        self.assertAlmostEqual(
+            inputbox.location["x"] + inputbox.size["width"] / 2,
+            512,
+            delta=500,
+        )
