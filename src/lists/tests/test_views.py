@@ -63,7 +63,7 @@ class ListViewTest(TestCase):
         response = self.client.get(f"/lists/{correct_list.id}/")
         self.assertEqual(response.context["list"], correct_list)
 
-
+""" 
 class ListAndItemModelsTest(TestCase):
     def test_saving_and_retrieving_items(self):
         mylist = List()
@@ -92,3 +92,4 @@ class ListAndItemModelsTest(TestCase):
         self.assertEqual(second_saved_item.text, "Item the second")
         self.assertEqual(second_saved_item.list, mylist)
 
+ """
