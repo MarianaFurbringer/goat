@@ -2,6 +2,7 @@ from django.test import TestCase
 from lists.models import Item, List
 from django.utils.html import escape
 from lists.forms import ItemForm, EMPTY_ITEM_ERROR
+from unittest import skip
 
 class HomePageTest(TestCase):
     def test_uses_home_template(self):
@@ -104,15 +105,17 @@ class ListViewTest(TestCase):
         self.assertRedirects(response, f"/lists/{correct_list.id}/")
 
     def test_validation_errors_end_up_on_lists_page(self):
-        list_ = List.objects.create()
+        list1 = List.objects.create()
+        item1 = Item.objects.create(list=list1, text="textey")
         response = self.client.post(
-            f"/lists/{list_.id}/",
-            data={"item_text": ""},  # Tentando adicionar um item vazio
+            f"/lists/{list1.id}/",
+            data={"text": "textey"},
         )
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "list.html")
-        expected_error = "You can't have an empty list item"  # Não é necessário escape
+
+        expected_error = escape("You've already got this in your list")
         self.assertContains(response, expected_error)
+        self.assertTemplateUsed(response, "list.html")
+        self.assertEqual(Item.objects.all().count(), 1)
 
     def test_displays_item_form(self):
         mylist = List.objects.create()
@@ -143,3 +146,17 @@ class ListViewTest(TestCase):
     def test_for_invalid_input_shows_error_on_page(self):
         response = self.post_invalid_input()
         self.assertContains(response, escape(EMPTY_ITEM_ERROR))
+
+    @skip
+    def test_duplicate_item_validation_errors_end_up_on_lists_page(self):
+        list1 = List.objects.create()
+        item1 = Item.objects.create(list=list1, text="textey")
+        response = self.client.post(
+            f"/lists/{list1.id}/",
+            data={"text": "textey"},
+        )
+
+        expected_error = escape("You've already got this in your list")
+        self.assertContains(response, expected_error)
+        self.assertTemplateUsed(response, "list.html")
+        self.assertEqual(Item.objects.all().count(), 1)
