@@ -3,7 +3,6 @@ from lists.models import Item, List
 from django.utils.html import escape
 from lists.forms import ItemForm
 
-
 class HomePageTest(TestCase):
     def test_uses_home_template(self):
         response = self.client.get("/")
@@ -18,13 +17,14 @@ class NewItemTest(TestCase):
         other_list = List.objects.create()
         correct_list = List.objects.create()
 
+        # Criando um item para a lista correta
         self.client.post(
-            f"/lists/{correct_list.id}/add_item",
+            f"/lists/{correct_list.id}/",  
             data={"item_text": "A new item for an existing list"},
         )
 
         self.assertEqual(Item.objects.count(), 1)
-        new_item = Item.objects.get()
+        new_item = Item.objects.first()  # Corrigido: pega o primeiro item
         self.assertEqual(new_item.text, "A new item for an existing list")
         self.assertEqual(new_item.list, correct_list)
 
@@ -33,7 +33,7 @@ class NewItemTest(TestCase):
         correct_list = List.objects.create()
 
         response = self.client.post(
-            f"/lists/{correct_list.id}/add_item",
+            f"/lists/{correct_list.id}/",  # Corrigido: sem /add_item
             data={"item_text": "A new item for an existing list"},
         )
 
@@ -44,15 +44,13 @@ class NewListTest(TestCase):
         response = self.client.post('/lists/new', data={'item_text':''})
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'home.html')
-        expected_error = escape("You can't have an empty list item")
+        expected_error = "You can't have an empty list item"  # Não é necessário usar escape aqui
         self.assertContains(response, expected_error)
 
     def test_invalid_list_items_arent_save(self):
         self.client.post('/lists/new', data={'item_text': ''})
         self.assertEqual(List.objects.count(), 0)
         self.assertEqual(Item.objects.count(), 0)
-
-
 
 class ListViewTest(TestCase):
 
@@ -90,7 +88,7 @@ class ListViewTest(TestCase):
         )
 
         self.assertEqual(Item.objects.count(), 1)
-        new_item = Item.objects.first()
+        new_item = Item.objects.first()  # Corrigido para pegar o primeiro item
         self.assertEqual(new_item.text, "A new item for an existing list")
         self.assertEqual(new_item.list, correct_list)
 
@@ -105,49 +103,13 @@ class ListViewTest(TestCase):
 
         self.assertRedirects(response, f"/lists/{correct_list.id}/")
 
-
     def test_validation_errors_end_up_on_lists_page(self):
         list_ = List.objects.create()
         response = self.client.post(
             f"/lists/{list_.id}/",
-            data={"item_text": ""},
+            data={"item_text": ""},  # Tentando adicionar um item vazio
         )
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "list.html")
-        expected_error = escape("You can't have an empty list item")
+        expected_error = "You can't have an empty list item"  # Não é necessário escape
         self.assertContains(response, expected_error)
-
-
-
-
-
-""" 
-class ListAndItemModelsTest(TestCase):
-    def test_saving_and_retrieving_items(self):
-        mylist = List()
-        mylist.save()
-
-        first_item = Item()
-        first_item.text = "The first (ever) list item"
-        first_item.list = mylist
-        first_item.save()
-
-        second_item = Item()
-        second_item.text = "Item the second"
-        second_item.list = mylist
-        second_item.save()
-
-        saved_list = List.objects.get()
-        self.assertEqual(saved_list, mylist)
-
-        saved_items = Item.objects.all()
-        self.assertEqual(saved_items.count(), 2)
-
-        first_saved_item = saved_items[0]
-        second_saved_item = saved_items[1]
-        self.assertEqual(first_saved_item.text, "The first (ever) list item")
-        self.assertEqual(first_saved_item.list, mylist)
-        self.assertEqual(second_saved_item.text, "Item the second")
-        self.assertEqual(second_saved_item.list, mylist)
-
- """

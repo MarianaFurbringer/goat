@@ -2,13 +2,29 @@
 
 {% block header_text %}Your To-Do list{% endblock %}
 
-{% block form_action %} {% url 'view_list' list.id %} {% endblock %}
+{% block form_action %}
+    {% url 'view_list' list.id %}
+{% endblock %}
 
+{% block content %}
+    <!-- Exibe erro se houver -->
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
 
-{% block table %}
-  <table class="table" id="id_list_table">
-    {% for item in list.item_set.all %}
-      <tr><td>{{ forloop.counter }}: {{ item.text }}</td></tr>
-    {% endfor %}
-  </table>
+    <!-- Tabela de Itens -->
+    <table class="table" id="id_list_table">
+        {% for item in list.item_set.all %}
+            <tr>
+                <td>{{ forloop.counter }}: {{ item.text }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <!-- Formulário de Novo Item -->
+    <form method="POST" action="{% block form_action %}{% endblock %}">
+        {% csrf_token %}
+        <input type="text" name="item_text" id="id_item_text" placeholder="Enter a new item" required>
+        <button type="submit">Add Item</button>
+    </form>
 {% endblock %}

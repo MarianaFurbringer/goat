@@ -9,7 +9,7 @@ class ItemValidationTest(FunctionalTest):
     def test_cannot_add_empty_list_items(self):
         # Edith acessa a página inicial e acidentalmente tenta submeter um item vazio
         self.browser.get(self.live_server_url)
-        self.browser.find_element(By.ID, "id_new_item").send_keys(Keys.ENTER)
+        self.get_item_input_box().send_keys(Keys.ENTER)
 
         # A página inicial é atualizada e pede que o campo não esteja em branco
         self.wait_for(lambda: self.assertEqual(
