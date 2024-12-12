@@ -25,9 +25,11 @@ def home_page(request):
 def new_list(request):
     form = ItemForm(data=request.POST)
     if form.is_valid():
-        list_ = List.objects.create()
-        form.save(for_list=list_)
-        return redirect(list_)
+        nulist = List.objects.create()
+        nulist.owner = request.user
+        nulist.save()
+        form.save(for_list=nulist)
+        return redirect(nulist)
     else:
         return render(request, "home.html", {"form": form})
     
