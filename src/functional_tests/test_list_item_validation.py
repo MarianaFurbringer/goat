@@ -97,3 +97,5 @@ class ItemValidationTest(FunctionalTest):
                 ).is_displayed()  
             )
         )
+
+        self.add_list_item("Buy wellies")
